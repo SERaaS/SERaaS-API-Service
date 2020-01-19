@@ -44,6 +44,26 @@ describe('controllers', function() {
 
         describe('POST /analyse/demo', function() {
 
+          function testEmotionClassification(
+            {_demoCode='Imicrowavecereal', _file='./test/api/files/test.wav', _errorCode=200} = {}
+          ) {
+            // console.log(_demoCode);
+            // console.log(_file);
+            // console.log(_errorCode);
+
+            return request(server)
+              .post('/analyse/demo')
+              .attach('file', _file)
+              .field('demoCode', _demoCode)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(_errorCode)
+              .end(function(err, res) {
+                console.log(err);
+                console.log(res);
+              })
+          }
+
           it('should be able to send an audio file and get a classified emotion back', function(done) {
             done();
           });
