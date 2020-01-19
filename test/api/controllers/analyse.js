@@ -65,27 +65,45 @@ describe('controllers', function() {
           }
 
           it('should be able to send an audio file and get a classified emotion back', function(done) {
-            done();
+            testEmotionClassification()
+            .then(function() {
+              done();
+            }); 
           });
 
           it('should give error if video file was sent', function(done) {
-            done();
+            testEmotionClassification({ _file: './test/api/files/testVideoFile.mp4', _errorCode: 400 })
+            .then(function() {
+              done();
+            })
           });
 
           it('should give error if other file types were sent', function(done) {
-            done();
+            testEmotionClassification({ _file: './test/api/files/testTextFile.txt', _errorCode: 400 })
+            .then(function() {
+              done();
+            })
           });
 
           it('should give error if no file given', function(done) {
-            done();
+            testEmotionClassification({ _file: '', _errorCode: 400 })
+            .then(function() {
+              done();
+            })
           });
 
           it('should give error if invalid demoCode givne', function(done) {
-            done();
+            testEmotionClassification({ _demoCode: 'invalid demoCode', _errorCode: 400 })
+            .then(function() {
+              done();
+            })
           });
 
           it('should give error if no demoCode given', function(done) {
-            done();
+            testEmotionClassification({ _demoCode: '', _errorCode: 400 })
+            .then(function() {
+              done();
+            })
           });
         })
     })
