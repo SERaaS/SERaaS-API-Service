@@ -44,66 +44,89 @@ describe('controllers', function() {
 
         describe('POST /analyse/demo', function() {
 
-          function testEmotionClassification(
-            {_demoCode='Imicrowavecereal', _file='./test/api/files/test.wav', _errorCode=200} = {}
-          ) {
-            // console.log(_demoCode);
-            // console.log(_file);
-            // console.log(_errorCode);
-
-            return request(server)
-              .post('/analyse/demo')
-              .attach('file', _file)
-              .field('demoCode', _demoCode)
-              .set('Accept', 'application/json')
-              .expect('Content-Type', /json/)
-              .expect(_errorCode)
-              .end(function(err, res) {
-                console.log(err);
-                console.log(res);
-              })
-          }
+          const _demoCode='Imicrowavecereal',
+            _file='./test/api/files/test.wav';
 
           it('should be able to send an audio file and get a classified emotion back', function(done) {
-            testEmotionClassification()
-            .then(function() {
-              done();
-            }); 
+            request(server)
+              .post('/analyse/demo')
+              .field('demoCode', _demoCode)
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if video file was sent', function(done) {
-            testEmotionClassification({ _file: './test/api/files/testVideoFile.mp4', _errorCode: 400 })
-            .then(function() {
-              done();
-            })
+            request(server)
+              .post('/analyse/demo')
+              .field('demoCode', _demoCode)
+              .attach('file', './test/api/files/testVideoFile.mp4')
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if other file types were sent', function(done) {
-            testEmotionClassification({ _file: './test/api/files/testTextFile.txt', _errorCode: 400 })
-            .then(function() {
-              done();
-            })
+            request(server)
+              .post('/analyse/demo')
+              .field('demoCode', _demoCode)
+              .attach('file', './test/api/files/testTextFile.txt')
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if no file given', function(done) {
-            testEmotionClassification({ _file: '', _errorCode: 400 })
-            .then(function() {
-              done();
-            })
+            request(server)
+              .post('/analyse/demo')
+              .field('demoCode', _demoCode)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if invalid demoCode givne', function(done) {
-            testEmotionClassification({ _demoCode: 'invalid demoCode', _errorCode: 400 })
-            .then(function() {
-              done();
-            })
+            request(server)
+              .post('/analyse/demo')
+              .field('demoCode', 'invalid demoCode')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
-          it('should give error if no demoCode given', function(done) {
-            testEmotionClassification({ _demoCode: '', _errorCode: 400 })
-            .then(function() {
-              done();
-            })
+          it('should give error if no demoCode given', function() {
+            request(server)
+              .post('/analyse/demo')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
         })
     })
