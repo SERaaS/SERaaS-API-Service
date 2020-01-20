@@ -9,6 +9,7 @@
   "main": "app.js",
   "dependencies": {
     "express": "^4.12.3",
+    "python-shell": "^1.0.8",
     "swagger-express-mw": "^0.1.0"
   },
   "devDependencies": {
