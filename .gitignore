@@ -133,3 +133,6 @@ dmypy.json
 
 # Demo project imports
 /api/models/classifier.joblib
+
+# Other
+tmp/
