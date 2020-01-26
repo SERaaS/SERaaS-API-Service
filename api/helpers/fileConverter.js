@@ -16,7 +16,25 @@ function audioFileConversion(fileBuffer) {
         .catch(err => {
             reject(err);
         });
+    });
+}
+
+/**
+ * Removes an existing tmp/ file after being created.
+ */
+function removeTemporaryFile(filePath) {
+    return new Promise((resolve, reject) => {
+        fs.unlink(filePath)
+        .then(() => {
+            resolve(filePath);
+        })
+        .catch(err => {
+            reject(err);
+        })
     })
 }
 
-module.exports = audioFileConversion;
+module.exports = {
+    write: audioFileConversion,
+    remove: removeTemporaryFile
+};
