@@ -11,23 +11,20 @@ from sklearn import svm
 inputAudioFilePath = ""
 
 # File that the model is persisted at
-MODEL_PERSISTANCE_FILE = "classifier.joblib"
+modelPersistanceFile = "classifier.joblib"
 
+# Ensuring argument given is a file path
 def ensureFilePath(filePath):
-    print("0. Ensuring argument given is a file path")
     return os.path.exists(filePath)
 
+# Load in input audio file
 def loadInputFile(filePath):
-    print("1. Load in input audio file")
-
     audioStream, sampleRate = librosa.load(filePath)
 
-    print("Input audio file loading fin.")
     return audioStream, sampleRate
 
+# Audio feature extraction from file
 def audioFeatureExtractionFrom(audioStream, sampleRate):
-    print("2. Audio feature extraction from file")
-
     audioFeatures = np.array([])
 
     mfccs = np.mean(librosa.feature.mfcc(y=audioStream, sr=sampleRate).T, axis=0)
@@ -36,29 +33,31 @@ def audioFeatureExtractionFrom(audioStream, sampleRate):
     audioFeatures = np.hstack((audioFeatures, mfccs))
     audioFeatures = np.hstack((audioFeatures, mel))
 
-    print("Audio feature extraction from file fin.")
     return audioFeatures
 
-def loadPersistedClassifier():
-    print("3. Load the persisted SVM classifier model")
-    return load(MODEL_PERSISTANCE_FILE)
+# Load the persisted SVM classifier model from input
+def loadPersistedClassifier(modelPersistanceFile):
+    return load(modelPersistanceFile)
 
+# Predict and output emotion classification from the input audio file
 def makeEmotionalStatisticsPrediction(model, audioFeatures):
-    print("4. Predict and output emotion statistics from the input audio file")
     return model.predict([audioFeatures])
 
 def main():
-    print("Hello World")
-
+    # Atleast one argument is required, for the audio file to be inspected
     if len(sys.argv) >= 2 and ensureFilePath(sys.argv[1]):
         inputAudioFilePath = sys.argv[1]
+
+        # Second argument is the path to the SER model
+        if ensureFilePath(sys.argv[2]):
+            modelPersistanceFile = sys.argv[2]
     else:
-        print("No valid argument given, usage: demo.py [filePath]")
+        print("No valid argument given, usage: demo.py [filePath] [modelPath]")
         return
 
     audioStream, sampleRate = loadInputFile(inputAudioFilePath)
     audioFeatures = audioFeatureExtractionFrom(audioStream, sampleRate)
-    model = loadPersistedClassifier()
-    print(makeEmotionalStatisticsPrediction(model, audioFeatures))
+    model = loadPersistedClassifier(modelPersistanceFile)
+    print(makeEmotionalStatisticsPrediction(model, audioFeatures)[0])
 
 main()
