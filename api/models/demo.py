@@ -58,6 +58,6 @@ def main():
     audioStream, sampleRate = loadInputFile(inputAudioFilePath)
     audioFeatures = audioFeatureExtractionFrom(audioStream, sampleRate)
     model = loadPersistedClassifier(modelPersistanceFile)
-    print(makeEmotionalStatisticsPrediction(model, audioFeatures)[0])
+    sys.stdout.write(makeEmotionalStatisticsPrediction(model, audioFeatures)[0])
 
 main()
