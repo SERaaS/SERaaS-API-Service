@@ -17,7 +17,32 @@ consumes:
 # format of the responses to the client (Accepts)
 produces:
   - application/json
+# complex objects have schema definitions
+definitions:
+  HelloWorldResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  ErrorResponse:
+    required:
+      - errorCode
+      - message
+    properties:
+      errorCode:
+        type: number
+      message:
+        type: string
+  DemoClassificationResponse:
+    required:
+      - emotion
+    properties:
+      emotion:
+        type: string
 paths:
+  /swagger:
+    x-swagger-pipe: swagger_raw
   /analyse:
     # binds a127 app logic to a route
     x-swagger-router-controller: analyse
@@ -42,19 +67,34 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /swagger:
-    x-swagger-pipe: swagger_raw
-# complex objects have schema definitions
-definitions:
-  HelloWorldResponse:
-    required:
-      - message
-    properties:
-      message:
-        type: string
-  ErrorResponse:
-    required:
-      - message
-    properties:
-      message:
-        type: string
+  /analyse/demo:
+    x-swagger-router-controller: analyse
+    post:
+      consumes:
+        - multipart/form-data
+      description: |
+        Send an audio file with speech 
+        and get the most probable emotion shown 
+        back (done via Support Vector Machine 
+        Classification)
+      operationId: analyseDemo
+      parameters:
+        - name: file
+          in: formData
+          description: The audio file with speech to upload
+          required: true
+          type: file
+        - name: demoCode
+          in: formData
+          description: The demo code validation string provided by the API to use this endpoint
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/DemoClassificationResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
