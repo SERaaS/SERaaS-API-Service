@@ -39,9 +39,12 @@ def audioFeatureExtractionFrom(audioStream, sampleRate):
 def loadPersistedClassifier(modelPersistanceFile):
     return load(modelPersistanceFile)
 
-# Predict and output emotion classification from the input audio file
+# Predict and output emotion statistics from the input audio file
 def makeEmotionalStatisticsPrediction(model, audioFeatures):
-    return model.predict([audioFeatures])
+    result = model.predict_proba([audioFeatures])[0]
+    classesAvailable = model.classes_
+    
+    return {"data": list(map(list, zip(classesAvailable, result)))}
 
 def main():
     # Atleast one argument is required, for the audio file to be inspected
@@ -58,6 +61,6 @@ def main():
     audioStream, sampleRate = loadInputFile(inputAudioFilePath)
     audioFeatures = audioFeatureExtractionFrom(audioStream, sampleRate)
     model = loadPersistedClassifier(modelPersistanceFile)
-    sys.stdout.write(makeEmotionalStatisticsPrediction(model, audioFeatures)[0])
+    sys.stdout.write(json.dumps(makeEmotionalStatisticsPrediction(model, audioFeatures)))
 
 main()
