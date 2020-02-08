@@ -44,20 +44,57 @@ describe('controllers', function() {
 
         describe('POST /analyse/all', function() {
 
+          const _file = './test/api/files/test.wav';
+
           it('should be able to send an audio file and get the emotional statistics back', function(done) {
-            done();
+            request(server)
+              .post('/analyse/all')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if video file was sent', function(done) {
-            done();
+            request(server)
+              .post('/analyse/all')
+              .attach('file', './test/api/files/testVideoFile.mp4')
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if other file types were sent', function(done) {
-            done();
+            request(server)
+              .post('/analyse/all')
+              .attach('file', './test/api/files/testTextFile.txt')
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
 
           it('should give error if no file given', function(done) {
-            done();
+            request(server)
+              .post('/analyse/all')
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
           });
         })
 
