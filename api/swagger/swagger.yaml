@@ -34,6 +34,23 @@ definitions:
         type: number
       message:
         type: string
+  EmotionStatisticObject:
+    required:
+      - emotion
+      - probability
+    properties:
+      emotion:
+        type: string
+      probability:
+        type: number
+  EmotionalStatisticsResponse:
+    required:
+      - emotions
+    properties:
+      emotions:
+        type: array
+        items:
+          $ref: "#/definitions/EmotionStatisticObject"
   # DemoClassificationResponse:
   #   required:
   #     - emotion
@@ -63,6 +80,32 @@ paths:
             # a pointer to a definition
             $ref: "#/definitions/HelloWorldResponse"
         # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /analyse/all:
+    x-swagger-router-controller: analyse
+    post:
+      consumes:
+        - multipart/form-data
+      description: |
+        Send an audio file with speech and 
+        get the emotional statistics shown 
+        back (done via Support Vector 
+        Machine Classification)
+      operationId: analyseAll
+      parameters:
+        - name: file
+          in: formData
+          description: The audio file with speech to upload
+          required: true
+          type: file
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/EmotionalStatisticsResponse"
         default:
           description: Error
           schema:
