@@ -42,6 +42,25 @@ describe('controllers', function() {
               });        
         })
 
+        describe('POST /analyse/all', function() {
+
+          it('should be able to send an audio file and get the emotional statistics back', function(done) {
+            done();
+          });
+
+          it('should give error if video file was sent', function(done) {
+            done();
+          });
+
+          it('should give error if other file types were sent', function(done) {
+            done();
+          });
+
+          it('should give error if no file given', function(done) {
+            done();
+          });
+        })
+
         // Demo API endpoint was a concept test for actual API endpoint
         /*
         describe('POST /analyse/demo', function() {
