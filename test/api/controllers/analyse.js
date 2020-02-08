@@ -42,6 +42,8 @@ describe('controllers', function() {
               });        
         })
 
+        // Demo API endpoint was a concept test for actual API endpoint
+        /*
         describe('POST /analyse/demo', function() {
 
           const _demoCode='Imicrowavecereal',
@@ -129,5 +131,6 @@ describe('controllers', function() {
               });
           });
         })
+        */
     })
 });

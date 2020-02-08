@@ -20,11 +20,14 @@ function analyseHelloWorld(req, res) {
     res.json(hello);
 }
 
-const DEMO_CODE_VALIDATION = 'Imicrowavecereal'
 /**
  * Send an audio file with speech and get the most probable emotion 
  * shown back (done via Support Vector Machine Classification)
+ * 
+ * Demo API endpoint was a concept test for actual API endpoint
  */
+/*
+const DEMO_CODE_VALIDATION = 'Imicrowavecereal'
 function analyseDemo(req, res) {
     const _file = req.swagger.params.file.value,
         _demoCode = req.swagger.params.demoCode.value;
@@ -99,8 +102,9 @@ function analyseDemo(req, res) {
         };
     })
 }
+*/
 
 module.exports = {
-    analyse: analyseHelloWorld,
-    analyseDemo: analyseDemo
+    analyse: analyseHelloWorld
+    // analyseDemo: analyseDemo
 }

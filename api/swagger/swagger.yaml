@@ -34,12 +34,12 @@ definitions:
         type: number
       message:
         type: string
-  DemoClassificationResponse:
-    required:
-      - emotion
-    properties:
-      emotion:
-        type: string
+  # DemoClassificationResponse:
+  #   required:
+  #     - emotion
+  #   properties:
+  #     emotion:
+  #       type: string
 paths:
   /swagger:
     x-swagger-pipe: swagger_raw
@@ -67,34 +67,35 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /analyse/demo:
-    x-swagger-router-controller: analyse
-    post:
-      consumes:
-        - multipart/form-data
-      description: |
-        Send an audio file with speech 
-        and get the most probable emotion shown 
-        back (done via Support Vector Machine 
-        Classification)
-      operationId: analyseDemo
-      parameters:
-        - name: file
-          in: formData
-          description: The audio file with speech to upload
-          required: true
-          type: file
-        - name: demoCode
-          in: formData
-          description: The demo code validation string provided by the API to use this endpoint
-          required: true
-          type: string
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: "#/definitions/DemoClassificationResponse"
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
+  # Demo API endpoint was a concept test for actual API endpoint
+  # /analyse/demo:
+  #   x-swagger-router-controller: analyse
+  #   post:
+  #     consumes:
+  #       - multipart/form-data
+  #     description: |
+  #       Send an audio file with speech 
+  #       and get the most probable emotion shown 
+  #       back (done via Support Vector Machine 
+  #       Classification)
+  #     operationId: analyseDemo
+  #     parameters:
+  #       - name: file
+  #         in: formData
+  #         description: The audio file with speech to upload
+  #         required: true
+  #         type: file
+  #       - name: demoCode
+  #         in: formData
+  #         description: The demo code validation string provided by the API to use this endpoint
+  #         required: true
+  #         type: string
+  #     responses:
+  #       "200":
+  #         description: Success
+  #         schema:
+  #           $ref: "#/definitions/DemoClassificationResponse"
+  #       default:
+  #         description: Error
+  #         schema:
+  #           $ref: "#/definitions/ErrorResponse"
