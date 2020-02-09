@@ -84,7 +84,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /analyse/all:
+  /analyse/{emotions}:
     x-swagger-router-controller: analyse
     post:
       consumes:
@@ -96,6 +96,17 @@ paths:
         Machine Classification)
       operationId: analyseAll
       parameters:
+        - name: emotions
+          in: path
+          description: |
+            Emotions to be analysed, can be "all" 
+            or a specific emotions. Multiple emotions 
+            can be queried by comma i.e. "happy,sad" 
+            Full list of emotions defined in Web 
+            Platform
+          required: true
+          type: string
+          default: all
         - name: file
           in: formData
           description: The audio file with speech to upload
