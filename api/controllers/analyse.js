@@ -6,7 +6,8 @@ const SER_MODEL_PATH = `${__dirname}/../models/classifier.joblib`;
 
 const util = require('util'),
     fileHelpers = require('../helpers/fileConverter'),
-    pythonRunner = require('../helpers/pythonRunner');
+    pythonRunner = require('../helpers/pythonRunner'),
+    AVAILABLE_EMOTIONS = require('../helpers/availableEmotions');
 
 /**
  * Sends a hello world message back to the user to test the API.
@@ -25,7 +26,8 @@ function analyseHelloWorld(req, res) {
  * shown back (done via Support Vector Machine Classification)
  */
 function analyseAll(req, res) {
-    const _file = req.swagger.params.file.value;
+    const _emotionsToAnalyse = req.swagger.params.emotions.value,
+        _file = req.swagger.params.file.value;
 
     // Only accept one file at a time
     if (Array.isArray(_file)) {
@@ -43,6 +45,26 @@ function analyseAll(req, res) {
         });
     };
 
+    // Limit emotional statistics output based on query
+    // If not querying all, separate by comma for queried emotions
+    // i.e. happy,sad -> ['happy', 'sad']
+    const showAllEmotions = _emotionsToAnalyse === 'all';
+    let emotionsToAnalyse = showAllEmotions ? [] : _emotionsToAnalyse.split(',');
+
+    if (!showAllEmotions) {
+        // Ensure some valid emotion query parameters exist
+        emotionsToAnalyse = emotionsToAnalyse.filter(emotion => {
+            return AVAILABLE_EMOTIONS.includes(emotion);
+        });
+
+        if (emotionsToAnalyse.length < 1) {
+            return res.status(400).send({
+                errorCode: 400,
+                message: 'Invalid query emotions provided, they do not exist.'
+            });
+        };
+    };
+
     // Path to temporarily stored audio file for Python script to be performed on
     let customFilePath = null;
 
@@ -55,20 +77,24 @@ function analyseAll(req, res) {
         return pythonRunner.run(`${__dirname}/../models/demo.py`, [customFilePath, SER_MODEL_PATH])
         .then(_emotionalStatistics => {
             const emotionalStatistics = JSON.parse(_emotionalStatistics).data;
-            let result = [];
-
-            // Wrap result into the appropriate output schema
-            // i.e. [{ emotion: '', probability: 0 }]
-            emotionalStatistics.forEach(arr => {
-                result.push({
-                    emotion: arr[0],
-                    probability: arr[1]
-                });
-            });
 
             // Audio file now redundant; removing the audio file to prevent it from taking storage space
             return fileHelpers.remove(customFilePath)
             .then(() => {
+                let result = [];
+    
+                // Wrap result into the appropriate output schema
+                // i.e. [{ emotion: '', probability: 0 }]
+                emotionalStatistics.forEach(arr => {
+                    const _emotion = arr[0];
+    
+                    if (showAllEmotions || emotionsToAnalyse.includes(_emotion)) {
+                        result.push({
+                            emotion: _emotion,
+                            probability: arr[1]
+                        });
+                    };
+                });
 
                 // Send final output
                 res.status(200).send({
