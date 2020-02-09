@@ -59,6 +59,45 @@ describe('controllers', function() {
               });
           });
 
+          it('should only return the happy emotion back if specified', function(done) {
+            request(server)
+              .post('/analyse/happy')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
+          });
+
+          it('should be able to return more than one emotion back if specified', function() {
+            request(server)
+              .post('/analyse/happy,sad')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
+          });
+
+          it('should give error if invalid emotions were sent', function(done) {
+            request(server)
+              .post('/analyse/invalid,emotion,here')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
+          });
+
           it('should give error if video file was sent', function(done) {
             request(server)
               .post('/analyse/all')
