@@ -85,9 +85,35 @@ describe('controllers', function() {
               });
           });
 
+          it('should be able to process the emotions periodically every 2 seconds if specified', function(done) {
+            request(server)
+              .post('/analyse/all/2')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(200)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
+          });
+
           it('should give error if invalid emotions were sent', function(done) {
             request(server)
               .post('/analyse/invalid,emotion,here')
+              .attach('file', _file)
+              .set('Accept', 'application/json')
+              .expect('Content-Type', /json/)
+              .expect(400)
+              .end(function(err, res) {
+                if (err) { done(new Error(err)); }
+                else { done(); }
+              });
+          });
+
+          it('should give error if emotions periodic query is less than 1 second', function() {
+            request(server)
+              .post('/analyse/all/0')
               .attach('file', _file)
               .set('Accept', 'application/json')
               .expect('Content-Type', /json/)
