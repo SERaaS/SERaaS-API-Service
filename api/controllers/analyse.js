@@ -28,6 +28,11 @@ function analyseHelloWorld(req, res) {
 function analyseAll(req, res) {
     const _emotionsToAnalyse = req.swagger.params.emotions.value,
         _file = req.swagger.params.file.value;
+    
+    // Checking if it is a periodic query or not
+    // Analyse the audio file in [_period] second chunks if it is
+    let _period = req.swagger.params.period || false;
+    _period = _period ? _period.value : false;
 
     // Only accept one file at a time
     if (Array.isArray(_file)) {
@@ -41,7 +46,7 @@ function analyseAll(req, res) {
     else if (!_file.mimetype.includes('audio')) {
         return res.status(400).send({
             errorCode: 400,
-            message: 'Invalid file providied, not an audio file.'
+            message: 'Invalid file provided, not an audio file.'
         });
     };
 
@@ -63,55 +68,129 @@ function analyseAll(req, res) {
                 message: 'Invalid query emotions provided, they do not exist.'
             });
         };
+    }
+
+    // Periodic length should be greater than 0
+    else if (_period && (isNaN(_period) || _period <= 0)) {
+        return res.status(400).send({
+            errorCode: 400,
+            message: 'Invalid periodic length provided, should be greater than 0.'
+        });
     };
 
     // Path to temporarily stored audio file for Python script to be performed on
-    let customFilePath = null;
+    let customFilePaths = null;
 
     // Writing into an audio file for the Python script to process
     return fileHelpers.write(_file.buffer)
-    .then(_customFilePath => {
-        customFilePath = _customFilePath;
+    .then(mainFilePath => {
+        customFilePaths = [mainFilePath];
 
-        // Perform the SER via the Python script
-        return pythonRunner.run(`${__dirname}/../models/demo.py`, [customFilePath, SER_MODEL_PATH])
-        .then(_emotionalStatistics => {
-            const emotionalStatistics = JSON.parse(_emotionalStatistics).data;
+        if (!_period) {
 
-            // Audio file now redundant; removing the audio file to prevent it from taking storage space
-            return fileHelpers.remove(customFilePath)
-            .then(() => {
-                let result = [];
-    
-                // Wrap result into the appropriate output schema
-                // i.e. [{ emotion: '', probability: 0 }]
-                emotionalStatistics.forEach(arr => {
-                    const _emotion = arr[0];
-    
-                    if (showAllEmotions || emotionsToAnalyse.includes(_emotion)) {
-                        result.push({
-                            emotion: _emotion,
-                            probability: arr[1]
-                        });
-                    };
-                });
+            // Non-periodic query => Process the one file
+            // Perform the SER via the Python script
+            return pythonRunner.run(`${__dirname}/../models/demo.py`, [mainFilePath, SER_MODEL_PATH])
+            .then(_emotionalStatistics => {
+                const emotionalStatistics = JSON.parse(_emotionalStatistics).data;
 
-                // Send final output
-                res.status(200).send({
-                    emotions: result
-                });
+                // Audio file now redundant; removing the audio file to prevent it from taking storage space
+                return fileHelpers.remove(mainFilePath)
+                .then(() => {
+                    let result = [];
+        
+                    // Wrap result into the appropriate output schema
+                    // i.e. [{ emotion: '', probability: 0 }]
+                    emotionalStatistics.forEach(arr => {
+                        const _emotion = arr[0];
+        
+                        if (showAllEmotions || emotionsToAnalyse.includes(_emotion)) {
+                            result.push({
+                                emotion: _emotion,
+                                probability: arr[1]
+                            });
+                        };
+                    });
+
+                    // Send final output
+                    res.status(200).send({
+                        emotions: result
+                    });
+                })
             })
-        })
+        } else {
+
+            // Periodic querying => Break into multiple files and process at a time
+            // Break the main file into multiple ones based on the given _period duration
+            return fileHelpers.split(mainFilePath, _period)
+            .then(newFilePaths => {
+                let result = [],
+                    promises = [];
+
+                    customFilePaths = customFilePaths.concat(newFilePaths);
+
+                // For each file; 1. Perform SER, 2. Remove file and 3. Wrap result
+                newFilePaths.forEach(filePath => {
+                    promises.push(
+                        // 1.
+                        pythonRunner.run(`${__dirname}/../models/demo.py`, [filePath, SER_MODEL_PATH])
+                        .then(_emotionalStatistics => {
+                            const emotionalStatistics = JSON.parse(_emotionalStatistics).data;
+
+                            // 2.
+                            return fileHelpers.remove(filePath)
+                            .then(() => {
+
+                                // 3.
+                                // i.e. [{ emotion: '', probability: 0 }]
+                                emotionalStatistics.forEach(arr => {
+                                    const _emotion = arr[0];
+                    
+                                    if (showAllEmotions || emotionsToAnalyse.includes(_emotion)) {
+                                        result.push({
+                                            emotion: _emotion,
+                                            probability: arr[1]
+                                        });
+                                    };
+                                });
+                            })
+                        })
+                    );
+                });
+
+                return Promise.all(promises)
+                .then(() => {
+
+                    // Main audio file now redundant after all operations performed.
+                    return fileHelpers.remove(mainFilePath)
+                    .then(() => {
+
+                        // Send final output
+                        res.status(200).send({
+                            emotions: result
+                        });
+                    });
+                })
+            });
+        };
     })
     .catch(err => {
         // Error occurred, use console.log to find issue
         console.log(err);
 
-        // Ensure the temporary file is removed
-        if (customFilePath != null) {
-            return fileHelpers.remove(customFilePath)
-            .then(() => {
+        // Ensure the temporary files are all removed
+        if (customFilePaths != null) {
+            let promises = [];
 
+            customFilePaths.forEach(filePath => {
+                promises.push(
+                    fileHelpers.remove(filePath)
+                );
+            });
+
+            return Promise.all(promises)
+            .then(() => {
+                
                 res.status(400).send({
                     errorCode: 400,
                     message: err
