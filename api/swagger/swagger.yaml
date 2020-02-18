@@ -121,6 +121,55 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
+  /analyse/{emotions}/{period}:
+    x-swagger-router-controller: analyse
+    post:
+      consumes:
+        - multipart/form-data
+      description: |
+        Send an audio file with speech and 
+        get the emotional statistics shown 
+        back (done via Support Vector 
+        Machine Classification), analysing 
+        the audio file periodically according 
+        to the given timeframe.
+      operationId: analyseAll
+      parameters:
+        - name: emotions
+          in: path
+          description: |
+            Emotions to be analysed, can be "all" 
+            or a specific emotions. Multiple emotions 
+            can be queried by comma i.e. "happy,sad" 
+            Full list of emotions defined in Web 
+            Platform
+          required: true
+          type: string
+          default: all
+        - name: period
+          in: path
+          description: |
+            The periodic length of the audio file to 
+            be analysed. E.g. if 2 is specified, the 
+            audio file's emotions are analysed in 2 
+            second intervals.
+          required: true
+          type: number
+          default: -1
+        - name: file
+          in: formData
+          description: The audio file with speech to upload
+          required: true
+          type: file
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/EmotionalStatisticsResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
   # Demo API endpoint was a concept test for actual API endpoint
   # /analyse/demo:
   #   x-swagger-router-controller: analyse
