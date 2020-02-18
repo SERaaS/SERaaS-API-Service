@@ -22,6 +22,17 @@ function analyseHelloWorld(req, res) {
 }
 
 /**
+ * Helper function to convert seconds into a readable minutes and seconds string.
+ * e.g. 60 -> 01:00
+ */
+function convertToMinutesSeconds(_secs) {
+    const mins = Math.floor(_secs / 60),
+        secs = _secs - mins * 60;
+
+    return String(`${mins >= 10 ? mins : '0' + mins}:${secs >= 10 ? secs : '0' + secs}`);
+};
+
+/**
  * Send an audio file with speech and get the emotional statistics 
  * shown back (done via Support Vector Machine Classification)
  */
@@ -126,11 +137,11 @@ function analyseAll(req, res) {
             .then(newFilePaths => {
                 let result = [],
                     promises = [];
-
-                    customFilePaths = customFilePaths.concat(newFilePaths);
+    
+                customFilePaths = customFilePaths.concat(newFilePaths);
 
                 // For each file; 1. Perform SER, 2. Remove file and 3. Wrap result
-                newFilePaths.forEach(filePath => {
+                newFilePaths.forEach((filePath, thisPathIndex) => {
                     promises.push(
                         // 1.
                         pythonRunner.run(`${__dirname}/../models/demo.py`, [filePath, SER_MODEL_PATH])
@@ -142,14 +153,20 @@ function analyseAll(req, res) {
                             .then(() => {
 
                                 // 3.
-                                // i.e. [{ emotion: '', probability: 0 }]
+                                // i.e. [{ emotion: '', probability: 0, duration: { from: '00:00', to: '00:00' } }]
                                 emotionalStatistics.forEach(arr => {
                                     const _emotion = arr[0];
                     
                                     if (showAllEmotions || emotionsToAnalyse.includes(_emotion)) {
                                         result.push({
                                             emotion: _emotion,
-                                            probability: arr[1]
+                                            probability: arr[1],
+
+                                            // The duration of the file being analysed
+                                            duration: {
+                                                from: convertToMinutesSeconds(thisPathIndex * _period),
+                                                to: convertToMinutesSeconds((thisPathIndex + 1) * _period)
+                                            }
                                         });
                                     };
                                 });
@@ -164,6 +181,9 @@ function analyseAll(req, res) {
                     // Main audio file now redundant after all operations performed.
                     return fileHelpers.remove(mainFilePath)
                     .then(() => {
+
+                        // Ensure the output is sorted based on duration of audio analysed
+                        result = result.sort((a, b) => a.duration.from > b.duration.from);
 
                         // Send final output
                         res.status(200).send({
