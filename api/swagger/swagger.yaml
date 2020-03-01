@@ -51,40 +51,10 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/EmotionStatisticObject"
-  # DemoClassificationResponse:
-  #   required:
-  #     - emotion
-  #   properties:
-  #     emotion:
-  #       type: string
 paths:
   /swagger:
     x-swagger-pipe: swagger_raw
-  /analyse:
-    # binds a127 app logic to a route
-    x-swagger-router-controller: analyse
-    get:
-      description: Returns 'Hello' to the caller
-      # used as the method name of the controller
-      operationId: analyse
-      parameters:
-        - name: name
-          in: query
-          description: The name of the person to whom to say hello
-          required: false
-          type: string
-      responses:
-        "200":
-          description: Success
-          schema:
-            # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
-        # responses may fall through to errors
-        default:
-          description: Error
-          schema:
-            $ref: "#/definitions/ErrorResponse"
-  /analyse/{emotions}:
+  /analyse/{userId}/{emotions}:
     x-swagger-router-controller: analyse
     post:
       consumes:
@@ -96,6 +66,11 @@ paths:
         Machine Classification)
       operationId: analyseAll
       parameters:
+        - name: userId
+          in: path
+          description: The SERaaS user account ID to query the endpoint with
+          required: true
+          type: string
         - name: emotions
           in: path
           description: |
@@ -121,7 +96,7 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  /analyse/{emotions}/{period}:
+  /analyse/{userId}/{emotions}/{period}:
     x-swagger-router-controller: analyse
     post:
       consumes:
@@ -135,6 +110,11 @@ paths:
         to the given timeframe.
       operationId: analyseAll
       parameters:
+        - name: userId
+          in: path
+          description: The SERaaS user account ID to query the endpoint with
+          required: true
+          type: string
         - name: emotions
           in: path
           description: |
@@ -170,35 +150,3 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/ErrorResponse"
-  # Demo API endpoint was a concept test for actual API endpoint
-  # /analyse/demo:
-  #   x-swagger-router-controller: analyse
-  #   post:
-  #     consumes:
-  #       - multipart/form-data
-  #     description: |
-  #       Send an audio file with speech 
-  #       and get the most probable emotion shown 
-  #       back (done via Support Vector Machine 
-  #       Classification)
-  #     operationId: analyseDemo
-  #     parameters:
-  #       - name: file
-  #         in: formData
-  #         description: The audio file with speech to upload
-  #         required: true
-  #         type: file
-  #       - name: demoCode
-  #         in: formData
-  #         description: The demo code validation string provided by the API to use this endpoint
-  #         required: true
-  #         type: string
-  #     responses:
-  #       "200":
-  #         description: Success
-  #         schema:
-  #           $ref: "#/definitions/DemoClassificationResponse"
-  #       default:
-  #         description: Error
-  #         schema:
-  #           $ref: "#/definitions/ErrorResponse"
