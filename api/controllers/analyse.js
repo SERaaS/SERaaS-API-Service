@@ -67,6 +67,9 @@ function analyseAll(req, res) {
     const _userId = req.swagger.params.userId.value,
         _emotionsToAnalyse = req.swagger.params.emotions.value,
         _file = req.swagger.params.file.value;
+
+    // Input metadata related to the API query to be stored in the User Management Service
+    let inputMetadata = {};
     
     // Checking if it is a periodic query or not
     // Analyse the audio file in [_period] second chunks if it is
@@ -89,6 +92,8 @@ function analyseAll(req, res) {
         });
     };
 
+    inputMetadata.fileName = _file.originalname;
+
     // Limit emotional statistics output based on query
     // If not querying all, separate by comma for queried emotions
     // i.e. happy,sad -> ['happy', 'sad']
@@ -107,6 +112,8 @@ function analyseAll(req, res) {
                 message: 'Invalid query emotions provided, they do not exist.'
             });
         };
+
+        inputMetadata.paramEmotionsAvailable = emotionsToAnalyse;
     }
 
     // Periodic length should be greater than 0
@@ -116,6 +123,10 @@ function analyseAll(req, res) {
             message: 'Invalid periodic length provided, should be greater than 0.'
         });
     };
+
+    if (_period) {
+        inputMetadata.paramPeriodicQuery = _period;
+    }
 
     // User ID should be a valid hexadecimal string from the User Management Service
     if (!hexadecimalString.test(_userId)) {
@@ -150,10 +161,18 @@ function analyseAll(req, res) {
                 // Helper function above handles all the logic to execute the SER
                 return getEmotionalStatistics(mainFilePath, showAllEmotions, emotionsToAnalyse)
                 .then(_emotions => {
-                    
-                    // Send final output
-                    res.status(200).send({
-                        emotions: _emotions
+
+                    // Store the entire API query's aggregated metadata in the User Management Service before outputting result
+                    return authentication.addAPIQueryTimestamp(_userId, inputMetadata, _emotions)
+                    .then()
+                    .catch()
+                    .then(() => {
+                        // Send final output regardless of error within User Management Service
+                        // This is because metadata storage is not a critical operation
+
+                        res.status(200).send({
+                            emotions: _emotions
+                        });
                     });
                 });
             } else {
@@ -205,9 +224,17 @@ function analyseAll(req, res) {
                             // Ensure the output is sorted based on duration of audio analysed
                             result = result.sort((a, b) => a.duration.from > b.duration.from);
 
-                            // Send final output
-                            res.status(200).send({
-                                emotions: result
+                            // Store the entire API query's aggregated metadata in the User Management Service before outputting result
+                            return authentication.addAPIQueryTimestamp(_userId, inputMetadata, result)
+                            .then(() => {})
+                            .catch(() => {})
+                            .then(() => {
+                                // Send final output regardless of error within User Management Service
+                                // This is because metadata storage is not a critical operation
+
+                                res.status(200).send({
+                                    emotions: result
+                                });
                             });
                         });
                     })
