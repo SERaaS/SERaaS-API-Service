@@ -28,6 +28,32 @@ function validateUserId(userId) {
     });
 };
 
+/**
+ * Store the given API endpoint query as a timestamp in the
+ * User Management Service with the given metadata.
+ */
+function addAPIQueryTimestamp(userId, _inputParams, _output) {
+    let metadata = {
+        output: _output,
+        ..._inputParams
+    };
+
+    return new Promise((resolve, reject) => {
+        
+        // Making an API call at the User Management Service, passing in the metadata as the input body
+        return axios.post(APIURLs.addAPIQueryTimestamp(userId), metadata)
+        .then(res => {
+
+            resolve(res.data);
+        })
+        .catch(err => {
+
+            reject(err);
+        });
+    });
+};
+
 module.exports = {
-    validateUserId: validateUserId
+    validateUserId: validateUserId,
+    addAPIQueryTimestamp: addAPIQueryTimestamp
 };

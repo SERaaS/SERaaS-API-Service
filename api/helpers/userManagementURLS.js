@@ -18,8 +18,8 @@ function validateUserId(userId) {
  * API endpoint to store a SERaaS API Query and its associated
  * metadata to the User Management Service.
  */
-function addAPIQueryTimestamp() {
-    `http://localhost:4000/authentication/data/${userId}`;
+function addAPIQueryTimestamp(userId) {
+    return `http://localhost:4000/authentication/data/${userId}`;
 };
 
 module.exports = {
