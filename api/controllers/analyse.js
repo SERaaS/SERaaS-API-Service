@@ -7,19 +7,11 @@ const SER_MODEL_PATH = `${__dirname}/../models/classifier.joblib`;
 const util = require('util'),
     fileHelpers = require('../helpers/fileConverter'),
     pythonRunner = require('../helpers/pythonRunner'),
+    authentication = require('../helpers/authenticationUtils'),
     AVAILABLE_EMOTIONS = require('../helpers/availableEmotions');
 
-/**
- * Sends a hello world message back to the user to test the API.
- */
-function analyseHelloWorld(req, res) {
-    // variables defined in the Swagger document can be referenced using req.swagger.params.{parameter_name}
-    var name = req.swagger.params.name.value || 'stranger';
-    var hello = util.format('Hello, %s!', name);
-
-    // this sends back a JSON response which is a single string
-    res.json(hello);
-}
+// Used to check if User IDs are valid User Management Service IDs (Hexadecimal strings)
+const hexadecimalString = /^[a-fA-F0-9]{24}$/;
 
 /**
  * Helper function to convert seconds into a readable minutes and seconds string.
@@ -72,7 +64,8 @@ function getEmotionalStatistics(filePath, showAllEmotions, emotionsToAnalyse) {
  * shown back (done via Support Vector Machine Classification)
  */
 function analyseAll(req, res) {
-    const _emotionsToAnalyse = req.swagger.params.emotions.value,
+    const _userId = req.swagger.params.userId.value,
+        _emotionsToAnalyse = req.swagger.params.emotions.value,
         _file = req.swagger.params.file.value;
     
     // Checking if it is a periodic query or not
@@ -124,83 +117,103 @@ function analyseAll(req, res) {
         });
     };
 
+    // User ID should be a valid hexadecimal string from the User Management Service
+    if (!hexadecimalString.test(_userId)) {
+        return res.status(401).send({
+            errorCode: 401,
+            message: 'Invalid user ID provided, should be a valid hexadecimal string.'
+        });
+    };
+
     // Path to temporarily stored audio file for Python script to be performed on
     let customFilePaths = null;
 
-    // Writing into an audio file for the Python script to process
-    return fileHelpers.write(_file.buffer)
-    .then(mainFilePath => {
-        customFilePaths = [mainFilePath];
+    // Ensuring the given user ID corresponds to a registered user in the User Management Service
+    return authentication.validateUserId(_userId)
+    .then(userExists => {
 
-        if (!_period) {
-
-            // Normal query => Simply do SER process on the entire file
-            // Helper function above handles all the logic to execute the SER
-            return getEmotionalStatistics(mainFilePath, showAllEmotions, emotionsToAnalyse)
-            .then(_emotions => {
-                
-                // Send final output
-                res.status(200).send({
-                    emotions: _emotions
-                });
+        if (!userExists) {
+            return res.status(401).send({
+                errorCode: 401,
+                message: 'Invalid user ID provided, should correspond to a registered user.'
             });
-        } else {
+        }
 
-            // Periodic querying => Break into multiple files and process at a time
-            // Break the main file into multiple ones based on the given [_period] duration
-            return fileHelpers.split(mainFilePath, _period)
-            .then(newFilePaths => {
-                let result = [],
-                    promises = [];
-    
-                // Storing all file paths created for deletion incase of failure
-                customFilePaths = customFilePaths.concat(newFilePaths);
+        // Writing into an audio file for the Python script to process
+        return fileHelpers.write(_file.buffer)
+        .then(mainFilePath => {
+            customFilePaths = [mainFilePath];
 
-                // For each file; 1. Perform SER, 2. Remove file and 3. Wrap result
-                newFilePaths.forEach((filePath, thisPathIndex) => {
-                    promises.push(
+            if (!_period) {
 
-                        // 1. & 2.
-                        getEmotionalStatistics(filePath, showAllEmotions, emotionsToAnalyse)
-                        .then(emotions => {
-                            emotions.forEach(emotionObj => {
+                // Normal query => Simply do SER process on the entire file
+                // Helper function above handles all the logic to execute the SER
+                return getEmotionalStatistics(mainFilePath, showAllEmotions, emotionsToAnalyse)
+                .then(_emotions => {
+                    
+                    // Send final output
+                    res.status(200).send({
+                        emotions: _emotions
+                    });
+                });
+            } else {
 
-                                // 3.
-                                // [{ emotion: '', probability: 0, duration: { from: '00:00', to: '00:00' } }]
-                                result.push({
-                                    emotion: emotionObj.emotion,
-                                    probability: emotionObj.probability,
+                // Periodic querying => Break into multiple files and process at a time
+                // Break the main file into multiple ones based on the given [_period] duration
+                return fileHelpers.split(mainFilePath, _period)
+                .then(newFilePaths => {
+                    let result = [],
+                        promises = [];
+        
+                    // Storing all file paths created for deletion incase of failure
+                    customFilePaths = customFilePaths.concat(newFilePaths);
 
-                                    // Add metadata for the duration of the file being analysed
-                                    duration: {
-                                        from: convertToMinutesSeconds(thisPathIndex * _period),
-                                        to: convertToMinutesSeconds((thisPathIndex + 1) * _period)
-                                    }
+                    // For each file; 1. Perform SER, 2. Remove file and 3. Wrap result
+                    newFilePaths.forEach((filePath, thisPathIndex) => {
+                        promises.push(
+
+                            // 1. & 2.
+                            getEmotionalStatistics(filePath, showAllEmotions, emotionsToAnalyse)
+                            .then(emotions => {
+                                emotions.forEach(emotionObj => {
+
+                                    // 3.
+                                    // [{ emotion: '', probability: 0, duration: { from: '00:00', to: '00:00' } }]
+                                    result.push({
+                                        emotion: emotionObj.emotion,
+                                        probability: emotionObj.probability,
+
+                                        // Add metadata for the duration of the file being analysed
+                                        duration: {
+                                            from: convertToMinutesSeconds(thisPathIndex * _period),
+                                            to: convertToMinutesSeconds((thisPathIndex + 1) * _period)
+                                        }
+                                    })
                                 })
                             })
-                        })
-                    );
-                });
+                        );
+                    });
 
-                // Execute the SER operations all at once and afterwards;
-                return Promise.all(promises)
-                .then(() => {
-
-                    // Remove the main audio file as it is now redundant after all operations performed.
-                    return fileHelpers.remove(mainFilePath)
+                    // Execute the SER operations all at once and afterwards;
+                    return Promise.all(promises)
                     .then(() => {
 
-                        // Ensure the output is sorted based on duration of audio analysed
-                        result = result.sort((a, b) => a.duration.from > b.duration.from);
+                        // Remove the main audio file as it is now redundant after all operations performed.
+                        return fileHelpers.remove(mainFilePath)
+                        .then(() => {
 
-                        // Send final output
-                        res.status(200).send({
-                            emotions: result
+                            // Ensure the output is sorted based on duration of audio analysed
+                            result = result.sort((a, b) => a.duration.from > b.duration.from);
+
+                            // Send final output
+                            res.status(200).send({
+                                emotions: result
+                            });
                         });
-                    });
-                })
-            });
-        };
+                    })
+                });
+            };
+        })
     })
     .catch(err => {
         // Error occurred, use console.log to find issue
@@ -227,13 +240,12 @@ function analyseAll(req, res) {
         } else {
             res.status(400).send({
                 errorCode: 400,
-                message: err
+                message: String(err)
             });
         };
     })
 }
 
 module.exports = {
-    analyse: analyseHelloWorld,
     analyseAll: analyseAll
 }
