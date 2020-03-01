@@ -65,13 +65,26 @@ describe('controllers', function() {
             });
         });
 
+        it('should give error if userId not corresponding with a user was used in query', function(done) {
+          request(server)
+            .post(`/analyse/4e5baa06dcddac3c105328a2/all`)
+            .attach('file', _file)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(401)
+            .end(function(err, res) {
+              if (err) { done(new Error(err)); }
+              else { done(); }
+            });
+        });
+
         it('should give error if invalid userId was used in query', function(done) {
           request(server)
             .post(`/analyse/INSERTRANDOMUSERIDHERE/all`)
             .attach('file', _file)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
-            .expect(404)
+            .expect(401)
             .end(function(err, res) {
               if (err) { done(new Error(err)); }
               else { done(); }
@@ -83,7 +96,7 @@ describe('controllers', function() {
             .post(`/analyse//all`)
             .attach('file', _file)
             .set('Accept', 'application/json')
-            .expect('Content-Type', /json/)
+            .expect('Content-Type', /html/)
             .expect(404)
             .end(function(err, res) {
               if (err) { done(new Error(err)); }
