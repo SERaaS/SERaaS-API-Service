@@ -2,12 +2,13 @@
   "name": "seraas-api-service",
   "version": "0.0.1",
   "private": true,
-  "description": "New Swagger API Project",
+  "description": "Speech Emotion Recognition as a Service",
   "keywords": [],
   "author": "",
   "license": "",
   "main": "app.js",
   "dependencies": {
+    "axios": "^0.19.2",
     "express": "^4.12.3",
     "swagger-express-mw": "^0.1.0",
     "uuid": "^3.4.0"

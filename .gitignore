@@ -136,3 +136,4 @@ dmypy.json
 
 # Other
 tmp/
+test/api/controllers/testingCredentials.js

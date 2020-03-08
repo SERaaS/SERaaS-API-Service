@@ -1,5 +1,9 @@
+# # # # # # #
+# Loads the scikit-learn Speech Emotion Recognition classifier model and formats
+# the input audio file for classification and outputs the prediction
+#
 # By: Wei Kit Wong
-# This file loads the persisted model and uses it for basic prediction of an input audio file
+# # # # # # #
 
 import sys
 import os
@@ -36,7 +40,7 @@ def audioFeatureExtractionFrom(audioStream, sampleRate):
 
     return audioFeatures
 
-# Load the persisted SVM classifier model from input
+# Load the persisted classifier model from input
 def loadPersistedClassifier(modelPersistanceFile):
     return load(modelPersistanceFile)
 
@@ -44,10 +48,11 @@ def loadPersistedClassifier(modelPersistanceFile):
 def makeEmotionalStatisticsPrediction(model, audioFeatures):
     result = model.predict_proba([audioFeatures])[0]
     classesAvailable = model.classes_
-    
+
     return {"data": list(map(list, zip(classesAvailable, result)))}
 
 def main():
+
     # Atleast one argument is required, for the audio file to be inspected
     if len(sys.argv) >= 2 and ensureFilePath(sys.argv[1]):
         inputAudioFilePath = sys.argv[1]
@@ -56,12 +61,16 @@ def main():
         if ensureFilePath(sys.argv[2]):
             modelPersistanceFile = sys.argv[2]
     else:
-        print("No valid argument given, usage: demo.py [filePath] [modelPath]")
+        sys.stdout.write("No valid argument given, usage: predictSER.py [filePath] [modelPath]")
         return
 
+    # Has atleast 1 argument, proceed with operations
     audioStream, sampleRate = loadInputFile(inputAudioFilePath)
     audioFeatures = audioFeatureExtractionFrom(audioStream, sampleRate)
     model = loadPersistedClassifier(modelPersistanceFile)
+
+    # Predict and output the result via stdout as JSON so 
+    # it's accesible through Node.js
     sys.stdout.write(json.dumps(makeEmotionalStatisticsPrediction(model, audioFeatures)))
 
 main()

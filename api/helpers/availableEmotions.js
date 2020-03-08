@@ -1,4 +1,6 @@
-// Stores a static list of emotions available for querying by a user.
+/**
+ * Static list of emotions available for querying by a user.
+ */
 
 module.exports = [
     'all',
