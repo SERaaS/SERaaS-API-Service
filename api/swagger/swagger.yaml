@@ -3,7 +3,7 @@ info:
   version: "0.0.1"
   title: Speech Emotion Recognition as a Service
 # during dev, should point to your local machine
-host: localhost:10010
+host: localhost:5000
 # basePath prefixes all resource paths 
 basePath: /
 # 

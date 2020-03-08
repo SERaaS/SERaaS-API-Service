@@ -6,23 +6,25 @@
  * and production.
  */
 
+const PORT = 4000;
+
 /**
- * API endpoint to ensure that the given userId corresponds to
+ * API endpoint to ensure that the given user ID corresponds to
  * a valid SERaaS user account in the User Management Service.
  */
 function validateUserId(userId) {
-    return `http://localhost:4000/authentication/validate/${userId}`
+  return `http://localhost:${PORT}/authentication/validate/${userId}`
 };
 
 /**
- * API endpoint to store a SERaaS API Query and its associated
+ * API endpoint to store a SERaaS API query and its associated
  * metadata to the User Management Service.
  */
 function addAPIQueryTimestamp(userId) {
-    return `http://localhost:4000/authentication/data/${userId}`;
+  return `http://localhost:${PORT}/authentication/data/${userId}`;
 };
 
 module.exports = {
-    validateUserId: validateUserId,
-    addAPIQueryTimestamp: addAPIQueryTimestamp
+  validateUserId: validateUserId,
+  addAPIQueryTimestamp: addAPIQueryTimestamp
 };
