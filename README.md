@@ -2,7 +2,7 @@
 
 Outputs emotion statistics from audio files containing speech, as an API.
 
-SERaaS is a Final Year Project for [Waterford Institute of Technology](https://www.wit.ie/) developed by [Wei Kit Wong](https://github.com/andyAndyA), which aims to provide a Speech Emotion Recognition as a Web API service. This service is to provide this core deliverable. This is achieved by Machine Learning to build the SER classification model, the [User Management Service](https://github.com/andyAndyA/SERaaS-User-Management-Service) to provide authentication features, and Node.js to deploy it all as a service.
+SERaaS is a Final Year Project for [Waterford Institute of Technology](https://www.wit.ie/) developed by [Wei Kit Wong](https://github.com/andyAndyA), which aims to provide a Speech Emotion Recognition as a Web API service. This service is to provide this core deliverable. This is achieved by Machine Learning to build the SER classification model, the [User Management Service](https://github.com/SERaaS/SERaaS-User-Management-Service) to provide authentication features, and Node.js to deploy it all as a service.
 
 ## General
 
