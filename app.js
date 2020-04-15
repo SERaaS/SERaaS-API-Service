@@ -1,7 +1,11 @@
 'use strict';
 
-const SwaggerExpress = require('swagger-express-mw');
-const app = require('express')();
+const SwaggerExpress = require('swagger-express-mw'),
+  app = require('express')(),
+  cors = require('cors');
+
+app.use(cors());
+
 module.exports = app; // for testing
 
 const config = {
