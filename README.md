@@ -8,6 +8,8 @@ SERaaS is a Final Year Project for [Waterford Institute of Technology](https://w
 
 ### Technologies Used
 
+Note that when testing the service, these must be installed.
+
 #### Python
 
 * *LibROSA* - Audio Feature Extraction
@@ -44,6 +46,10 @@ Note that the following files are missing from the repo, and these must be intro
 This file is the SER model built using scikit-learn, persisted using joblib. Note that when building using the algorithm of your choice, probability estimates must be enabled to support the usage of the `predict_proba` function.
 
 Learn more about building models using scikit-learn at [this](https://scikit-learn.org/stable/tutorial/basic/tutorial.html) article.
+
+##### *tmp/*
+
+This directory is required for running the API endpoint, as this is the directory where temporarily files are made so the SER model can perform emotional analytics on the audio file sent by the user.
 
 ##### *test/api/controllers/testingCredentials.js*
 
