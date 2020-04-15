@@ -18,7 +18,7 @@ Note that when testing the service, these must be installed.
 
 #### JavaScript
 
-* *Node.js* - JavaScript Runtime
+* *Node.js (v10.19.0)* - JavaScript Runtime
 * *Swagger.js* - Node.js API Development Tool
 
 #### Other
