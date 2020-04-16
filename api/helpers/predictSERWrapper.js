@@ -17,7 +17,7 @@ function pythonRunner(scriptPath, args=[]) {
   return new Promise(function(resolve, reject) {
 
 		// Hosting service and terminal should have Python pre-installed to use this
-    const program = spawn('python',  [scriptPath].concat(args));
+    const program = spawn('python3',  [scriptPath].concat(args));
 
     program.stdout.on('data', function(data) {
       resolve(data.toString());
