@@ -114,7 +114,7 @@ function analyseAll(req, res) {
   }
 
   // Periodic length should be greater than 0
-  else if (_period && (isNaN(_period) || _period <= 0)) {
+  else if (_period !== undefined && (isNaN(_period) || _period <= 0)) {
     return res.status(400).send({
       errorCode: 400,
       message: 'Invalid periodic length provided, should be greater than 0.'
