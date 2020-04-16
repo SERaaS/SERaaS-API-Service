@@ -3,7 +3,7 @@
  * uses to build their API calls.
  */
 
-const loc = window.location,
+const loc = { protocol: "http:", "hostname": "localhost" },
   PORT = 4000;
 
 /**
