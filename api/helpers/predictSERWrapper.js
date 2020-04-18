@@ -17,7 +17,7 @@ function pythonRunner(scriptPath, args=[]) {
   return new Promise(function(resolve, reject) {
 
 		// Hosting service and terminal should have Python pre-installed to use this
-    const program = spawn('python3',  [scriptPath].concat(args));
+    const program = spawn('python',  [scriptPath].concat(args));
 
     program.stdout.on('data', function(data) {
       resolve(data.toString());
@@ -35,8 +35,12 @@ function pythonRunner(scriptPath, args=[]) {
  * Outputs the results as an array of arrays
  * e.g. [[emotion, probabilityOfEmotion], [emotion, probabilityOfEmotion], ...]
  */
-function speechEmotionRecognition(filePath) {
-	return pythonRunner(SER_SCRIPT_PATH, [filePath, SER_MODEL_PATH])
+function speechEmotionRecognition(filePath, emotionsToAnalyse) {
+
+  // Dynamically selecting the model to use for performing SER based on the emotions to analyse / compare.
+  const modelPath = `${__dirname}/../models/classifiers/${emotionsToAnalyse.sort().join(',')}.joblib`;
+
+	return pythonRunner(SER_SCRIPT_PATH, [filePath, modelPath])
 	.then(function(res) {
 
 		// Ensure that the Python output is converted to JSON
