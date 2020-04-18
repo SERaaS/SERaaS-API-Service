@@ -75,8 +75,13 @@ paths:
           in: path
           description: |
             Emotions to be analysed, can be "all" 
-            or a specific emotions. Multiple emotions 
-            can be queried by comma i.e. "happy,sad" 
+            or a specific emotions. Note that you cannot
+            analyse individual emotions, only multiple
+            ones together.
+            
+            Multiple emotions must be queried by comma
+            i.e. "happy,sad"
+            
             Full list of emotions defined in Web 
             Platform
           required: true
@@ -119,8 +124,13 @@ paths:
           in: path
           description: |
             Emotions to be analysed, can be "all" 
-            or a specific emotions. Multiple emotions 
-            can be queried by comma i.e. "happy,sad" 
+            or a specific emotions. Note that you cannot
+            analyse individual emotions, only multiple
+            ones together.
+
+            Multiple emotions must be queried by comma
+            i.e. "happy,sad"
+            
             Full list of emotions defined in Web 
             Platform
           required: true
