@@ -131,8 +131,9 @@ dmypy.json
 # Node.js dependencies
 /node_modules
 
-# Demo project imports
+# SER classifiers
 /api/models/classifier.joblib
+/api/models/classifiers
 
 # Other
 tmp/

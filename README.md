@@ -2,7 +2,7 @@
 
 Outputs emotion statistics from audio files containing speech, as an API.
 
-SERaaS is a Final Year Project for [Waterford Institute of Technology](https://www.wit.ie/) developed by [Wei Kit Wong](https://github.com/andyAndyA), which aims to provide a Speech Emotion Recognition as a Web API service. This service is to provide this core deliverable. This is achieved by Machine Learning to build the SER classification model, the [User Management Service](https://github.com/andyAndyA/SERaaS-User-Management-Service) to provide authentication features, and Node.js to deploy it all as a service.
+SERaaS is a Final Year Project for [Waterford Institute of Technology](https://www.wit.ie/) developed by [Wei Kit Wong](https://github.com/andyAndyA), which aims to provide a Speech Emotion Recognition as a Web API service. This service is to provide this core deliverable. This is achieved by Machine Learning to build the SER classification model, the [User Management Service](https://github.com/SERaaS/SERaaS-User-Management-Service) to provide authentication features, and Node.js to deploy it all as a service.
 
 ## General
 
@@ -23,7 +23,7 @@ Note that when testing the service, these must be installed.
 
 #### Other
 
-* *ffmpeg* - File Splitting
+* *ffmpeg (v4.2)* - File Splitting
 
 ## Usage
 
@@ -41,9 +41,23 @@ By default, the User Management Service is configured to run at port 4000 and ex
 
 Note that the following files are missing from the repo, and these must be introduced by yourself in order to run the service;
 
-##### *api/models/classifier.joblib*
+##### */api/models/classifiers/*
 
-This file is the SER model built using scikit-learn, persisted using joblib. Note that when building using the algorithm of your choice, probability estimates must be enabled to support the usage of the `predict_proba` function.
+This directory are the SER models built using scikit-learn, persisted using joblib. There are a total of 255 models, an "all" model which analyses all the emotions defined in `./api/helpers/availableEmotions.js`, and 254 other models for analysing different combinations of the emotions listed.
+
+The models are named based on the emotions being analysed, sorted in alphabetical order (excl. `./api/models/classifiers/all.joblib`).
+```
+angry,calm,disgust,fearful,happy,neutral,sad.joblib
+angry,calm,disgust,fearful,happy,neutral,sad,surprised.joblib
+...
+angry,calm.joblib
+...
+angry,disgust,fearful,happy,neutral,surprised.joblib
+...
+happy,sad,surprised.joblib
+...
+neutral,surprised.joblib
+```
 
 Learn more about building models using scikit-learn at [this](https://scikit-learn.org/stable/tutorial/basic/tutorial.html) article.
 

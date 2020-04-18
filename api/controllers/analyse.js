@@ -27,9 +27,10 @@ function convertToMinutesSeconds(_secs) {
  * removing it after the operation.
  */
 function getEmotionalStatistics(filePath, showAllEmotions, emotionsToAnalyse) {
+  let _emotionsToAnalyse = showAllEmotions ? ["all"] : emotionsToAnalyse;
 
   // Perform the SER via the Python script
-  return predictSERWrapper.speechEmotionRecognition(filePath)
+  return predictSERWrapper.speechEmotionRecognition(filePath, _emotionsToAnalyse)
   .then(emotionalStatistics => {
 
     // Audio file now redundant; removing the audio file to prevent it from taking storage space
@@ -42,12 +43,10 @@ function getEmotionalStatistics(filePath, showAllEmotions, emotionsToAnalyse) {
       emotionalStatistics.forEach(arr => {
         const _emotion = arr[0];
 
-        if (showAllEmotions || emotionsToAnalyse.includes(_emotion)) {
-          emotions.push({
-            emotion: _emotion,
-            probability: arr[1]
-          });
-        };
+        emotions.push({
+          emotion: _emotion,
+          probability: arr[1]
+        });
       });
 
       // Return final output
@@ -107,6 +106,11 @@ function analyseAll(req, res) {
       return res.status(400).send({
         errorCode: 400,
         message: 'Invalid query emotions provided, they do not exist.'
+      });
+    } else if (emotionsToAnalyse.length == 1) {
+      return res.status(400).send({
+        errorCode: 400,
+        message: 'You must provide more than one valid emotion query, otherwise do "all" to analyse all emotions at once.'
       });
     };
 
