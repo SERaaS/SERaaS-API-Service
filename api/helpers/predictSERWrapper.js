@@ -35,8 +35,12 @@ function pythonRunner(scriptPath, args=[]) {
  * Outputs the results as an array of arrays
  * e.g. [[emotion, probabilityOfEmotion], [emotion, probabilityOfEmotion], ...]
  */
-function speechEmotionRecognition(filePath) {
-	return pythonRunner(SER_SCRIPT_PATH, [filePath, SER_MODEL_PATH])
+function speechEmotionRecognition(filePath, emotionsToAnalyse) {
+
+  // Dynamically selecting the model to use for performing SER based on the emotions to analyse / compare.
+  const modelPath = `${__dirname}/../models/classifiers/${emotionsToAnalyse.sort().join(',')}.joblib`;
+
+	return pythonRunner(SER_SCRIPT_PATH, [filePath, modelPath])
 	.then(function(res) {
 
 		// Ensure that the Python output is converted to JSON

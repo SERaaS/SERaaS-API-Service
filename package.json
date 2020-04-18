@@ -9,6 +9,7 @@
   "main": "app.js",
   "dependencies": {
     "axios": "^0.19.2",
+    "cors": "^2.8.5",
     "express": "^4.12.3",
     "swagger-express-mw": "^0.1.0",
     "uuid": "^3.4.0"

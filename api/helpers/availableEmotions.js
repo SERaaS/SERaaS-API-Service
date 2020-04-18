@@ -3,13 +3,13 @@
  */
 
 module.exports = [
-    'all',
+    // 'all',
     'neutral',
     'calm',
     'happy',
     'sad',
     'angry',
     'fearful',
-    'disgusted',
+    'disgust',
     'surprised'
 ];
