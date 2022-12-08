@@ -1,5 +1,5 @@
 audioread==2.1.8
-certifi==2019.11.28
+certifi==2022.12.7
 cffi==1.14.0
 Cython==0.29.14
 decorator==4.4.1
